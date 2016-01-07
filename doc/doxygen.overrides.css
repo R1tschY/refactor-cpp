@@ -1,0 +1,447 @@
+/* Schrift 'Roboto' importieren */
+@import url(http://fonts.googleapis.com/css?family=Roboto);
+
+/* allgemein */
+body, table, div, p, dl {
+	font: 400 12px Roboto,sans-serif;
+	margin: 0;
+	padding: 0;
+}
+
+/* Absatz */
+p {
+	margin: 0.5em 0;  
+}
+
+/* Überschrift */
+h2 {
+  font-size: 1.3em;
+}
+
+h3 {
+  font-size: 1.1em;
+}
+
+/* allgemeiner Codeblock */
+code {
+  font-family: "Ubuntu Mono", "Droid Sans Mono", Consolas, monospace;
+}
+
+/* Überschriften */
+h1, h2, h3, h4, h5, h6 {
+  color: #222;
+	margin-left: 0;
+	padding-left: 0;
+}
+
+/* Link */
+a.el {
+  font-weight: normal;
+}
+
+/* maximale Breite beschränken */
+div.contents hr {
+  max-width: 100%;
+}
+
+div.contents, div.header {
+  max-width: 750px;
+	border-right: 1px solid #eee;
+	padding-right: 10px;
+	padding-left: 10px;
+	margin: 0;
+}
+
+div.contents {
+  border-bottom: 1px solid #EEE;
+	padding-bottom: 10px;
+}
+
+div.header {
+  padding-top: 3px;
+}
+
+div.contents > *:first-child {
+  margin-top: 0;
+	padding-top: 10px;
+}
+
+/* Tabelle */
+table.directory {
+  border-collapse: collapse;
+	width: 100%;
+}
+
+.directory td.entry {
+  white-space: normal;
+	padding: 5px 5px 5px 30px;
+	vertical-align: middle;
+	text-indent: -20px;
+}
+
+.directory td.desc {
+  width: unset;
+	vertical-align: middle;
+	width: 60%;
+}
+
+.directory tr {
+  background-color: unset;
+}
+
+/*.directory tr.even {
+  background-color: unset;
+}*/
+
+/* Title */
+.title {
+	font: 400 14px/28px Roboto,sans-serif;
+  color: #0095C1;
+}
+
+#projectname {
+  font: 32px Roboto,sans-serif;
+  color: #0095C1;
+}
+
+#titlearea {
+  border-bottom: 3px solid #0095C1;
+  box-shadow: 0px 2px 2px #999;
+  position: relative;
+  z-index: 10;
+}
+
+/* Seperator */
+div.ui-resizable-e {
+  background-image: none;
+	background-color: #0095C1;
+}
+
+/* Suche */
+#MSearchSelectWindow, #MSearchResultsWindow {
+  z-index: 20;
+}
+
+/* Schnelllinks */
+div.summary {
+  width: 85%;
+}
+
+/* Include Zeile */
+.contents p code {
+  color: green;
+/*  background-color: #F8FAFD;*/
+/*  padding: 1.0em; */
+/*  display: inline-block; */
+/*  border-radius: 5px; */
+  font-size: 1.1em;
+}
+
+p > code a {
+  color: green;
+  font-weight: normal;
+}
+
+/* Zusammenfassung */
+.mdescLeft, .mdescRight, .memItemLeft, .memItemRight, .memTemplItemLeft,
+.memTemplItemRight, .memTemplParams {
+  background-color: #fff;
+}
+
+.memItemRight b, .memTemplItemRight b {
+  font-weight: normal;
+}
+
+/* Abstandhalter */
+.memSeparator {
+  border: none;
+}
+
+/* Memberbescheibung */
+.memitem {
+
+}
+
+/* Gruppentitel */
+h2.groupheader {
+  border-bottom: 1px solid #0095C1;
+}
+
+/* Typendefinition in Zusammenfassung */
+.memItemRight, .memTemlpItemRight {
+  color: #222;
+}
+
+/* Typ in Typendefinition in Zusammenfassung */
+.memItemLeft, .memTemplItemLeft {
+  color: #222;
+}
+
+/* Templateparameter in Zusammenfassung */
+.memTemplParams {
+  color: #666;
+}
+
+/* Membertitle */
+.memproto, dl.reflist dt {
+  background-image: none;
+  background-color: #EBEEF5;
+  box-shadow: none;
+  border-top: 1px solid #eee;
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
+  border: none;
+  border-radius: 5px;
+	margin: 0 0 3px 5px;
+	text-shadow: 1px 1px #ccc;
+}
+
+/* Memberdetails */
+.memdoc, dl.reflist dd {
+  background-image: none;
+  background-color: #fff;
+  box-shadow: none;
+  border-bottom: 1px solid #eee;
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
+  border: none;
+  margin-left: 2em;
+  padding-top: 0px;
+  margin-top: 0px;
+}
+
+/* Memberlabel */
+span.mlabel {
+  background-color: #0095C1;
+  border-width: 0;
+  padding: 3px 5px;
+  vertical-align: text-top;
+}
+
+/* Gruppierung von Memberlabels */
+span.mlabels {
+  margin-bottom: 5px;
+	display: inline-block;
+}
+
+/* linke Seite Membertitel */
+td.mlabels-left {
+  width: 0%;
+}
+
+/* Membername */
+.memname {
+  font-weight:normal;
+  font-size:1.1em;
+}
+
+.memname td {
+  padding: 1px;
+}
+
+
+/* Parameterrichtung [in], [out], ... */
+.params .paramdir {
+  font-family: "Ubuntu Mono", "Droid Sans Mono", Consolas, monospace;
+  vertical-align: middle;
+  color: #666;
+}
+
+/* Parametername in Details */
+.params .paramname, .retval .paramname {
+  color: #333;
+  font-weight: normal;
+  font-style: normal;
+	padding-right: 1em;
+	text-shadow: 1px 1px #CCC;
+}
+
+/* Parametername */
+.paramname {
+  color: #333;
+  font-style: italic;
+}
+
+/* Parametername in Titel */
+.paramname em {
+  color: #333;
+}
+
+/* Standardparameter */
+.paramname code {
+}
+
+/* inline Codefragment */
+pre.fragment {
+  font-family: "Ubuntu Mono", "Droid Sans Mono", Consolas, monospace;
+}
+
+/* inline Codefragment */
+div.fragment {
+  padding: 5px;
+  margin: 10px;
+  border-radius: 5px;
+  background-color: #fcfcfc;
+  border: 1px solid #ccc;
+}
+
+/* Warnung */
+dl.warning, dl.attention {
+  background-color: hsl(39, 100%, 90%); 
+  border-radius: 5px;
+	margin: 5px 0 5px -5px;
+	border: none;
+	padding: 5px;
+}
+
+/* Fehler */
+dl.bug {
+	background-color: hsl(319, 100%, 90%);
+	border-radius: 5px;
+	margin: 5px 0 5px -5px;
+	border: none;
+	padding: 5px;
+}
+
+dl.bug a.el {
+  font-weight: bold;
+	color: black;
+}
+
+/* Aufgabe */
+dl.todo {
+  background-color: hsl(228, 100%, 90%);
+	border-radius: 5px;
+	margin: 5px 0 5px -5px;
+	border: none;
+	padding: 5px;
+}
+
+/* Vorbedingung */
+dl.pre, dl.post, dl.invariant {
+	padding-left: 0;
+	margin-left: 0;
+	border: none;
+}
+
+/* inline Code */
+div.line {
+	font-family: "Ubuntu Mono", "Droid Sans Mono", Consolas, monospace;
+	color: #000;
+}
+
+/* Zeilennummer */
+span.lineno {
+	/* Nicht markierbar -> damit nur Quellcode kopiert wird */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+	border: none;
+  border-right: 1px solid #ccc;
+	background: none;
+}
+
+span.lineno a {
+	background: none;
+}
+
+span.lineno a:hover {
+	background: none;
+	text-decoration: none;
+}
+
+/* Kommentar */
+span.comment {
+  color: #080;
+}
+/* Schlüsselwort */
+span.keyword {
+  color: #e80;
+}
+span.keywordtype {
+  color: #333;
+}
+span.keywordflow {
+  color: #e80;
+}
+
+/* Link */
+span.preprocessor a.code {
+  color: #333;
+}
+
+/* Preprocessor */
+span.preprocessor {
+  color: #333;
+}
+
+/*
+ * Aufzählung *
+ */
+
+table.fieldtable {
+  border: none;
+	box-shadow: none;
+}
+
+.fieldtable th {
+  background: none;
+	font-size: 1em;
+	border: none;
+	padding-left: 0px;
+	color: #000;
+}
+
+.fieldtable td.fieldname,
+.fieldtable td.fieldtype {
+	border: none;
+	text-shadow: 1px 1px #ccc;
+	font-style: normal;
+	color: #333;
+}
+
+.fieldtable td.fieldname {
+  padding-left: 40px;
+}
+
+.fieldtable td.fieldname em {
+  font-style: normal;
+}
+
+.fieldtable td.fielddoc {
+	border: none;
+}
+
+/* Footer */
+.navpath ul {
+  background-image: none;
+	border-top: 1px solid #0095C1;
+	background-color: #EBEEF5;
+	height: unset;
+}
+
+/* Brotkrumen */
+.navpath li.navelem a {
+  color: #0095C1;
+}
+
+/* Erstellungsinfo */
+.navpath li.footer {
+  color: #666;
+}
+
+/* doxygen */
+img.footer {
+  height: 20px;
+}
+
+/* für kleines Browserfenster */
+@media (max-width: 550px) {
+  #projectname {
+		display: none;
+	}
+}
