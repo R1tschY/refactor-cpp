@@ -1,3 +1,12 @@
+# Backups
+*~
+*.bak
+*.swp*
+
+# Logfiles
+*.log
+*.data
+
 # Compiled Object files
 *.slo
 *.lo
