@@ -1,4 +1,6 @@
-int main(int argc, char *argv[])
+#include "../lib/refactor.h"
+
+int main(int argc, const char *argv[])
 {
-  return 0;
+  return Refactor::main(argc, argv);
 }

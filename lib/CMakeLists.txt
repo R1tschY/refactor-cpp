@@ -1,10 +1,6 @@
 # Sources
 file(GLOB_RECURSE RefactorCppLib_SOURCES "*.cpp")
 
-# Clang
-find_package(LLVM REQUIRED)
-find_package(Clang REQUIRED)
-
 # Target
 add_library(RefactorCppLib SHARED ${RefactorCppLib_SOURCES})
 target_include_directories(RefactorCppLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -21,8 +17,9 @@ target_include_directories(RefactorCppLib SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
 # Boost
 target_link_libraries(RefactorCppLib ${Boost_LIBRARIES})
 
+
 # Clang
-target_link_libraries(RefactorCppLib PRIVATE ${CLANG_LIBS})
-target_include_directories(RefactorCppLib SYSTEM PRIVATE ${CLANG_INCLUDE_DIRS})
+target_link_libraries(RefactorCppLib PRIVATE ${LLVM_MODULE_LIBS} ${CLANG_LIBS})
+target_include_directories(RefactorCppLib SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
 link_directories(${LLVM_LIBRARY_DIRS})
-add_definitions(${CLANG_CFLAGS})
+add_definitions(${LLVM_CFLAGS} ${CLANG_CFLAGS})

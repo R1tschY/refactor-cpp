@@ -83,6 +83,7 @@ find_package(Boost QUIET REQUIRED)
 
 # Clang
 find_package(LLVM REQUIRED)
+find_package(Clang REQUIRED)
 
 #
 add_subdirectory(lib)
