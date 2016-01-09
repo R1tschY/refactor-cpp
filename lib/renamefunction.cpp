@@ -10,10 +10,14 @@
 #include <clang/Basic/SourceManager.h>
 #include <clang/Lex/Lexer.h>
 #include <llvm-3.6/llvm/ADT/VariadicFunction.h>
+#include <boost/algorithm/string/predicate.hpp>
 #include <cassert>
 #include <iostream>
 #include <set>
 #include <utility>
+#include <regex>
+
+#include "core/parsers.h"
 
 using namespace clang;
 using namespace clang::ast_matchers;
@@ -123,12 +127,48 @@ private:
 
 // RenameFunction
 
-RenameFunction::RenameFunction(std::string old_name, std::string new_name)
-: old_name_(old_name), new_name_(new_name)
+RenameFunction::~RenameFunction()
 {
 }
 
-RenameFunction::~RenameFunction()
+std::unique_ptr<RenameFunction> RenameFunction::createFromCommand(std::string command)
+{
+  // parse commands and check argument count
+  CommandOptions options = Parsers::parseCommandOptions(command);
+  if (options.arguments.size() != 2)
+  {
+    // TODO:
+    throw std::invalid_argument(
+      "-rename-function: Failed to parse parameters.\n"
+      "Syntax: -rename-function OLD,NEW");
+  }
+
+  // create refactoring
+  return createFromNames(options.arguments[0], options.arguments[1]);
+}
+
+std::unique_ptr<RenameFunction> RenameFunction::createFromNames(
+  std::string definition, std::string new_name)
+{
+  // ensure that `definition` starts with `::`
+  if (!boost::algorithm::starts_with(definition, "::"))
+  {
+    const char* double_colon = "::";
+    definition.insert(definition.begin(), double_colon, double_colon + 2);
+  }
+
+  // parse `definition`
+  //FuncDef decl = Parsers::parseFunctionDefinition(definition);
+
+  // create refactoring
+  auto result = std::unique_ptr<RenameFunction>(new RenameFunction(
+    definition, new_name // TODO: check input
+  ));
+  return result;
+}
+
+RenameFunction::RenameFunction(std::string definition, std::string new_name)
+: old_name_(definition), new_name_(new_name)
 {
 }
 

@@ -13,7 +13,10 @@ namespace Refactor {
 class RenameFunction : public Refactoring
 {
 public:
-  RenameFunction(std::string old_name, std::string new_name);
+  static std::unique_ptr<RenameFunction> createFromCommand(std::string command);
+  static std::unique_ptr<RenameFunction> createFromNames(std::string old_name,
+    std::string new_name);
+
   virtual ~RenameFunction();
 
   std::unique_ptr<RefactoringAction> createAction (
@@ -25,6 +28,7 @@ public:
   const std::string& getNewName() const { return new_name_; }
 
 private:
+  RenameFunction(std::string definition, std::string new_name);
   std::string old_name_;
   std::string new_name_;
 };

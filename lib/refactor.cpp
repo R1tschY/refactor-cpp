@@ -2,8 +2,12 @@
 
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <llvm-3.6/llvm/Support/CommandLine.h>
+#include <llvm-3.6/llvm/Support/raw_ostream.h>
+#include <exception>
 #include <memory>
+#include <string>
 #include <vector>
+#include <iostream>
 
 #include "refactoring.h"
 #include "refactoringapplication.h"
@@ -13,36 +17,84 @@ using namespace clang;
 using namespace clang::tooling;
 using namespace llvm;
 
-// Apply a custom category to all command-line options so that they are the
-// only ones displayed.
-static cl::OptionCategory MyToolCategory("my-tool options");
-
-// CommonOptionsParser declares HelpMessage with a description of the common
-// command-line options related to the compilation database and input files.
-// It's nice to have this help message in all tools.
 static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 
-// A help message for this specific tool can be added afterwards.
-static cl::extrahelp MoreHelp("\nMore help text...");
+//
+// Refactor C++ Options
+//
+static cl::OptionCategory RefactorCppCategory("Refactor C++ Options");
+
+static cl::opt<bool> FinalSyntaxCheck(
+  "final-syntax-check",
+  cl::desc("Check for correct syntax after applying refactoring"),
+  cl::init(false),
+  cl::cat(RefactorCppCategory));
+
+//
+// Refactor C++ Refactorings
+//
+
+static cl::opt<std::string> RenameOption(
+  "rename-function",
+  cl::desc("Rename a function"),
+  cl::ValueRequired,
+  cl::Optional,
+  cl::cat(RefactorCppCategory));
 
 namespace Refactor {
 
 int main(int argc, const char *argv[])
 {
-  CommonOptionsParser OptionsParser(argc, argv, MyToolCategory);
+  CommonOptionsParser OptionsParser(argc, argv, RefactorCppCategory);
   RefactoringApplication app(
     OptionsParser.getCompilations(),
     OptionsParser.getSourcePathList());
 
   Refactorings refactorings;
-  refactorings.emplace_back(
-    std::make_unique<RenameFunction>("::func", "function")
-  );
 
-  for (const auto& refactoring : refactorings)
-    app.addRefactoring(*refactoring);
+  try
+  {
+    if (RenameOption.getNumOccurrences() > 0)
+    {
+      refactorings.emplace_back(
+        RenameFunction::createFromCommand(RenameOption.getValue())
+      );
+    }
+    else
+    {
+      llvm::errs() << "no refactorings given\n";
+      return 1;
+    }
+  }
+  catch(const std::exception& e)
+  {
+    llvm::errs() << "Error while parsing command arguments: " << e.what() << '\n';
+    return 1;
+  }
 
-  return app.runAndSave();
+  try
+  {
+    for (const auto& refactoring : refactorings)
+      app.addRefactoring(*refactoring);
+  }
+  catch(const std::exception& e)
+  {
+    llvm::errs() << "Error while creating refactorings: " << e.what() << '\n';
+    return 1;
+  }
+
+  int returncode = app.run();
+  if (returncode != 0)
+  {
+    return returncode;
+  }
+
+  llvm::outs() << "Replacements collected:\n";
+  for (auto &r : app.getReplacements()) {
+    llvm::outs() << r.toString() << "\n";
+  }
+
+  return app.save() ? 0 : 1;
 }
 
 } // namespace Refactor

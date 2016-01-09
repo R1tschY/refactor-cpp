@@ -22,7 +22,11 @@ public:
   ~RefactoringApplication();
 
   void addRefactoring(const Refactoring& task);
-  int runAndSave();
+
+  clang::tooling::Replacements& getReplacements();
+
+  int run();
+  bool save();
 
 private:
   clang::tooling::RefactoringTool tool_;
