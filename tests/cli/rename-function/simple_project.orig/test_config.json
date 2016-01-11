@@ -1,0 +1,9 @@
+{
+  "arguments": [
+    "-rename-function", "func,function"
+  ],
+
+  "sources": [
+    "simple_function.cpp"
+  ]
+}

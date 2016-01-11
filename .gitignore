@@ -36,6 +36,9 @@
 # Directories
 build*
 
+# Testfiles
+*.act
+
 # Eclipse
 .settings
 .cproject
