@@ -9,6 +9,10 @@ import subprocess
 import shutil
 import json
 
+# command line arguments
+use_gdb = '--gdb' in sys.argv
+print(use_gdb)
+
 # ignore dirs regex
 ignore_dirs = re.compile(r"(.*)\.(act|expected)")
 
@@ -68,7 +72,9 @@ def process_test(root, name):
 
     cmd_print(u'⚙ create working directory')
     shutil.copytree(origpath, actpath,
-      ignore=shutil.ignore_patterns('*~', 'build', '*.json')
+      ignore=shutil.ignore_patterns(
+          '*~', 'build', '*.json'
+      )
     )
 
     # *.orig
@@ -110,6 +116,10 @@ def process_test(root, name):
     ])
     arguments.extend(sources)
 
+    if use_gdb == True:
+        arguments.insert(0, 'gdb')
+        arguments.insert(1, '--args')
+
     # make refactoring
     cmd_print(u'🚜 make refactoring')
     subprocess.check_call(
@@ -126,7 +136,6 @@ def process_test(root, name):
         'diff',
         '--tabsize=2', '--expand-tabs',
         '--recursive',
-        '--exclude=compile_commands.json',
         '--exclude=build',
         actpath, exppath
       ],
@@ -150,8 +159,9 @@ num_tests = 0
 failed_tests = 0
 os.chdir('..')
 
+
 # walk testfiles directory tree
-for root, dirs, files in os.walk('tests/testfiles'):
+for root, dirs, files in os.walk('tests/cli'):
   # walk all files
   for d in dirs:
     # ignore dirs

@@ -1,9 +1,10 @@
 {
   "arguments": [
-    "-rename-function", "func,function"
+    "-rename-function", "Project::func1,RENAMED"
   ],
 
   "sources": [
-    "simple_function.cpp"
+    "main.cpp",
+    "project.cpp"
   ]
 }
