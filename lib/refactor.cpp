@@ -1,13 +1,14 @@
 #include "refactor.h"
 
 #include <clang/Tooling/CommonOptionsParser.h>
-#include <llvm-3.6/llvm/Support/CommandLine.h>
-#include <llvm-3.6/llvm/Support/raw_ostream.h>
+#include <clang/Tooling/Core/Replacement.h>
+#include <llvm/Support/CommandLine.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/Signals.h>
 #include <exception>
 #include <memory>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include "refactoring.h"
 #include "refactoringapplication.h"
@@ -45,6 +46,8 @@ namespace Refactor {
 
 int main(int argc, const char *argv[])
 {
+  llvm::sys::PrintStackTraceOnErrorSignal();
+
   CommonOptionsParser OptionsParser(argc, argv, RefactorCppCategory);
   RefactoringApplication app(
     OptionsParser.getCompilations(),

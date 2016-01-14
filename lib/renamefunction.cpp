@@ -1,5 +1,6 @@
 #include "renamefunction.h"
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <clang/AST/Decl.h>
 #include <clang/AST/DeclBase.h>
 #include <clang/AST/Expr.h>
@@ -10,14 +11,16 @@
 #include <clang/Basic/SourceManager.h>
 #include <clang/Lex/Lexer.h>
 #include <llvm-3.6/llvm/ADT/VariadicFunction.h>
-#include <boost/algorithm/string/predicate.hpp>
 #include <cassert>
-#include <iostream>
+//#include <iostream>
+//#include <regex>
 #include <set>
+#include <stdexcept>
 #include <utility>
-#include <regex>
+#include <vector>
 
 #include "core/parsers.h"
+#include "core/utils.h"
 
 using namespace clang;
 using namespace clang::ast_matchers;
@@ -27,20 +30,6 @@ using namespace llvm;
 namespace Refactor {
 
 namespace {
-
-std::string decl2str(const clang::Decl *d, SourceManager &sm) {
-    clang::SourceLocation b(d->getLocStart()), _e(d->getLocEnd());
-    clang::SourceLocation e(clang::Lexer::getLocForEndOfToken(_e, 0, sm, LangOptions()));
-    return std::string(sm.getCharacterData(b),
-        sm.getCharacterData(e)-sm.getCharacterData(b));
-}
-
-std::string expr2str(const clang::Expr *d, SourceManager &sm) {
-    clang::SourceLocation b(d->getLocStart()), _e(d->getLocEnd());
-    clang::SourceLocation e(clang::Lexer::getLocForEndOfToken(_e, 0, sm, LangOptions()));
-    return std::string(sm.getCharacterData(b),
-        sm.getCharacterData(e)-sm.getCharacterData(b));
-}
 
 class CallRenamer: public MatchFinder::MatchCallback
 {
@@ -52,15 +41,17 @@ public:
 
   virtual void run(const MatchFinder::MatchResult &Result)
   {
-    const CallExpr *M = Result.Nodes.getNodeAs<CallExpr>("function");
+    const DeclRefExpr *M = Result.Nodes.getNodeAs<DeclRefExpr>("function");
     assert(M);
 
-    std::cout << "Renaming: " << expr2str(M, *Result.SourceManager) << '\n';
+    CharSourceRange char_range = CharSourceRange::getTokenRange(SourceRange(M->getLocation()));
+
+    printRenaming(Result.Context, char_range, new_name_);
 
     replacements_->insert(
       Replacement(
         *Result.SourceManager,
-        CharSourceRange::getTokenRange(SourceRange(M->getExprLoc())),
+        char_range,
         new_name_));
   }
 
@@ -82,12 +73,15 @@ public:
     const FunctionDecl *D = Result.Nodes.getDeclAs<FunctionDecl>("function");
     assert(D);
 
-    std::cout << "Renaming: " << decl2str(D, *Result.SourceManager) << '\n';
+    CharSourceRange char_range =
+      CharSourceRange::getTokenRange(SourceRange(D->getLocation()));
+
+    //printRenaming(Result.Context, char_range, new_name_);
 
     replacements_->insert(
       Replacement(
         *Result.SourceManager,
-        CharSourceRange::getTokenRange(SourceRange(D->getLocation())),
+        char_range,
         new_name_));
   }
 
@@ -108,8 +102,10 @@ public:
       decl_renamer_(replacements, refactoring)
   {
     Finder.addMatcher(
-      callExpr(callee(functionDecl(hasName(refactoring.getOldName())))).bind(
-        "function"),
+      //callExpr(callee(functionDecl(hasName(refactoring.getOldName())))).bind(
+      //  "function"),
+      declRefExpr(to(functionDecl(hasName(refactoring.getOldName())))).bind(
+              "function"),
       &call_renamer_);
 
     Finder.addMatcher(
