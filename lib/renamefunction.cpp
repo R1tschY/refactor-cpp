@@ -12,8 +12,6 @@
 #include <clang/Lex/Lexer.h>
 #include <llvm-3.6/llvm/ADT/VariadicFunction.h>
 #include <cassert>
-//#include <iostream>
-//#include <regex>
 #include <set>
 #include <stdexcept>
 #include <utility>
@@ -102,10 +100,10 @@ public:
       decl_renamer_(replacements, refactoring)
   {
     Finder.addMatcher(
-      //callExpr(callee(functionDecl(hasName(refactoring.getOldName())))).bind(
-      //  "function"),
-      declRefExpr(to(functionDecl(hasName(refactoring.getOldName())))).bind(
-              "function"),
+      declRefExpr(
+          to(functionDecl(hasName(refactoring.getOldName()))),
+          unless(isInTemplateInstantiation())
+      ).bind("function"),
       &call_renamer_);
 
     Finder.addMatcher(
