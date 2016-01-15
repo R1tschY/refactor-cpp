@@ -31,6 +31,19 @@ class Style:
   def print(color, msg):
     print(color + msg + Style.Normal)
 
+def generate_compile_commands(folder, sources, args):
+  absfolder = os.path.abspath(folder)
+  result = []
+  for source in sources:
+    result.append({
+      'directory': absfolder,
+      'command': '/usr/bin/c++ ' + args + ' -o ' + source + '.o -c ' + source,
+      'file': os.path.join(absfolder, source)
+    })
+  f = open(os.path.join(absfolder, 'compile_commands.json'), 'w')
+  json.dump(result, f)
+  f.close()
+
 def ignore_directory(name):
   return re.match(ignore_dirs, name) != None
 
@@ -56,7 +69,7 @@ def process_test(root, name):
   actdir = name + '.act'
   actpath = os.path.join(root, actdir)
   buildpath = os.path.join(actpath, 'build')
-  ccjson = os.path.join(buildpath, 'compile_commands.json')
+  ccjson = os.path.join(actpath, 'compile_commands.json')
   expdir = name + '.expected'
   exppath = os.path.join(root, expdir)
   configpath = os.path.join(origpath, 'test_config.json')
@@ -76,41 +89,29 @@ def process_test(root, name):
       )
     )
 
-    # *.orig
-    if not os.path.isfile(ccjson):
-      # generate compile_commands.json
-      cmd_print(u'⚙ generate compile_commands.json')
-      os.mkdir(buildpath)
-      subprocess.check_call(
-        ['cmake',
-          '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
-          '-g', 'Unix Makefiles',
-          '..'
-        ],
-        cwd = buildpath,
-        stdout = sys.stdout,
-        stderr = sys.stderr
-      )
-      if not os.path.isfile(ccjson):
-        return print_test_result(test_name, False,
-          'Failed to generate `compile_commands.json`.')
-
-    # search corresponding *.expected
-    if not os.path.isdir(exppath):
-      return print_test_result(test_name, False, "%s does not exist." % expdir)
-
-
     # read test config
     with open(configpath, encoding='utf-8') as data_file:
       config = json.loads(data_file.read())
 
     arguments = config['arguments']
     sources = config['sources']
+    cc = config['compile commands']
+
+    # generate compile_commands.json
+    cmd_print(u'⚙ generate compile_commands.json')
+    generate_compile_commands(actpath, sources, cc)
+    if not os.path.isfile(ccjson):
+      return print_test_result(test_name, False,
+        'Failed to generate `compile_commands.json`.')
+
+    # search corresponding *.expected
+    if not os.path.isdir(exppath):
+      return print_test_result(test_name, False, "%s does not exist." % expdir)
 
     # build command line
     arguments.insert(0, refactorbin)
     arguments.extend([
-      '-p', os.path.abspath(buildpath),
+      '-p', os.path.abspath(actpath),
       '-extra-arg=-I/usr/lib/clang/3.6/include' # FIXME
     ])
     arguments.extend(sources)
@@ -135,6 +136,7 @@ def process_test(root, name):
         'diff', '-wupr',
         '--exclude=build',
         '--exclude=*~',
+        '--exclude=*.json',
         actpath, exppath
       ],
       stdout = sys.stdout,
@@ -157,13 +159,11 @@ num_tests = 0
 failed_tests = 0
 os.chdir('../..')
 
-
 # walk testfiles directory tree
 for root, dirs, files in os.walk('tests/cli'):
   # walk all files
   remove_dirs = []
   for d in dirs:
-    print(d)
     # ignore dirs
     if ignore_directory(d):
       remove_dirs.append(d)
@@ -186,6 +186,4 @@ for root, dirs, files in os.walk('tests/cli'):
 
 print(u'%d tests (%d failed)' % (num_tests, failed_tests))
 exit(failed_tests)
-
-
 

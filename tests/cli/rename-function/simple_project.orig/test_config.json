@@ -6,5 +6,7 @@
   "sources": [
     "main.cpp",
     "project.cpp"
-  ]
+  ],
+
+  "compile commands": "-std=c++1y"
 }
