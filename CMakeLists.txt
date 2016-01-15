@@ -88,7 +88,7 @@ find_package(Clang REQUIRED)
 #
 add_subdirectory(lib)
 add_subdirectory(cli)
-#TODO add_subdirectory(tests)
+add_subdirectory(tests)
 
 # utils
 add_custom_target(update COMMAND cmake .)
