@@ -1,6 +1,6 @@
 {
   "arguments": [
-    "-rename-function", "Project::func1,RENAMED"
+    "-rename-function", "Project::func1,RENAMED", "--extra-arg=-std=c++1y"
   ],
 
   "sources": [

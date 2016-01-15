@@ -20,7 +20,7 @@ ignore_dirs = re.compile(r"(.*)\.(act|expected)")
 orig_re = re.compile(r"(.*)\.orig")
 
 # refactor-cpp path
-refactorbin = os.path.abspath('bin/refactor-cpp') # FIXME more robost version please
+refactorbin = os.path.abspath('../bin/refactor-cpp')
 
 class Style:
   Passed = '\033[32m'
@@ -133,10 +133,9 @@ def process_test(root, name):
     cmd_print(u'🔁 check differences')
     result = subprocess.call(
       [
-        'diff',
-        '--tabsize=2', '--expand-tabs',
-        '--recursive',
+        'diff', '-wupr',
         '--exclude=build',
+        '--exclude=*~',
         actpath, exppath
       ],
       stdout = sys.stdout,
@@ -157,7 +156,7 @@ def process_test(root, name):
 
 num_tests = 0
 failed_tests = 0
-os.chdir('..')
+os.chdir('../..')
 
 
 # walk testfiles directory tree
