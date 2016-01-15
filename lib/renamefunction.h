@@ -26,11 +26,13 @@ public:
 
   const std::string& getOldName() const { return old_name_; }
   const std::string& getNewName() const { return new_name_; }
+  bool allowUnsafe() const { return allow_unsafe_; }
 
 private:
   RenameFunction(std::string definition, std::string new_name);
   std::string old_name_;
   std::string new_name_;
+  bool allow_unsafe_ = false;
 };
 
 } // namespace Refactor

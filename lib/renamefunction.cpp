@@ -99,12 +99,26 @@ public:
       call_renamer_(replacements, refactoring),
       decl_renamer_(replacements, refactoring)
   {
-    Finder.addMatcher(
-      declRefExpr(
-          to(functionDecl(hasName(refactoring.getOldName()))),
-          unless(isInTemplateInstantiation())
-      ).bind("function"),
-      &call_renamer_);
+    if (refactoring.allowUnsafe())
+    {
+      Finder.addMatcher(
+        declRefExpr(
+            to(functionDecl(hasName(refactoring.getOldName()))),
+
+            // don't replace if used in function pointer template parameter substitutions
+            unless(hasAncestor(substNonTypeTemplateParmExpr()))
+        ).bind("function"),
+        &call_renamer_);
+    }
+    else
+    {
+      Finder.addMatcher(
+        declRefExpr(
+            to(functionDecl(hasName(refactoring.getOldName()))),
+            unless(isInTemplateInstantiation())
+        ).bind("function"),
+        &call_renamer_);
+    }
 
     Finder.addMatcher(
       functionDecl(hasName(refactoring.getOldName())).bind("function"),
