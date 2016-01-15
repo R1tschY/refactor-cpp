@@ -11,7 +11,6 @@ import json
 
 # command line arguments
 use_gdb = '--gdb' in sys.argv
-print(use_gdb)
 
 # ignore dirs regex
 ignore_dirs = re.compile(r"(.*)\.(act|expected)")
@@ -162,22 +161,28 @@ os.chdir('../..')
 # walk testfiles directory tree
 for root, dirs, files in os.walk('tests/cli'):
   # walk all files
+  remove_dirs = []
   for d in dirs:
+    print(d)
     # ignore dirs
     if ignore_directory(d):
-      dirs.remove(d)
+      remove_dirs.append(d)
       continue
 
     # match *.orig
     m = re.match(orig_re, d)
     if m == None:
       continue
-    dirs.remove(d)
+    remove_dirs.append(d)
 
     num_tests = num_tests + 1
 
     if not process_test(root, m.group(1)):
       failed_tests = failed_tests + 1
+
+  for d in remove_dirs:
+    dirs.remove(d)
+
 
 print(u'%d tests (%d failed)' % (num_tests, failed_tests))
 exit(failed_tests)

@@ -19,6 +19,10 @@ using FalseFunction = void(*)(Project::MyClass,Project::MyClass);
 
 #define CALLME(func, a, b) (*func)((a), (b))
 
+#define CONCAT_(a,b) a ## b
+#define CONCAT(a,b) CONCAT_(a,b)
+#define CALLME_BAD(f1, f2, a,b) CONCAT(f1,f2)(a,b)
+
 void callme(Function f, int a, int b)
 {
   f(a, b);
@@ -39,13 +43,13 @@ void CallMe(Func f, Args&&...args)
 template<typename T>
 void CallMeSafe(int a, int b)
 {
-  Project::RENAMED(a, b + sizeof(T));
+  Project::func1(a, b + sizeof(T));
 }
 
 template<typename...Args>
 void CallMeUnsafe1(Args&&...args)
 {
-  Project::RENAMED(std::forward<Args>(args)...);
+  Project::func1(std::forward<Args>(args)...);
 }
 
 template<typename...Args>
@@ -107,6 +111,8 @@ int main(int argc, char** argv)
   // in macros
   CALLME(::Project::RENAMED, 1, 2);
   CALLME(&::Project::RENAMED, 1, 2);
+  //CALLME_BAD(::Project::, func1, 0, 1);
+  CALLME_BAD(::Project::func, 1, 0, 1);
 
   // function parameter
   callme(&Project::RENAMED, 1, 2);
