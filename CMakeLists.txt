@@ -7,54 +7,52 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 # C++14
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++1y")
 
+include(cmake/AddConfig.cmake)
+
 # Debug mode
-set(DEBUG_FLAGS "-g -Og -ffast-math -DDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${DEBUG_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${DEBUG_FLAGS}")
-set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} ${DEBUG_FLAGS}")
-set(CMAKE_MODULE_LINKER_FLAGS_DEBUG "${CMAKE_MODULE_LINKER_FLAGS_DEBUG} ${DEBUG_FLAGS}")
-set(CMAKE_STATIC_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} ${DEBUG_FLAGS}")
+add_config(
+	Debug
+	CXX_FLAGS "-g -Og -DDEBUG -D_DEBUG"
+	LINKER_FLAGS "-Og"
+)
 
 # Profile mode	
-set(PROFILE_FLAGS "-g -fno-omit-frame-pointer -Ofast -ffast-math -flto -DNDEBUG")
-set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} ${PROFILE_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS_PROFILE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${PROFILE_FLAGS}")
-set(CMAKE_SHARED_LINKER_FLAGS_PROFILE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${PROFILE_FLAGS}")
-set(CMAKE_MODULE_LINKER_FLAGS_PROFILE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} ${PROFILE_FLAGS}")
-set(CMAKE_STATIC_LINKER_FLAGS_PROFILE "${CMAKE_STATIC_LINKER_FLAGS_RELEASE} ${PROFILE_FLAGS}")
+add_config(
+	Profile
+	CXX_FLAGS "-g -fno-omit-frame-pointer -Ofast -flto -DNDEBUG"
+	LINKER_FLAGS "-g -fno-omit-frame-pointer -Ofast -flto"
+)
 
 # Sanitize mode
-set(SAN_FLAGS "-g -O2 -fsanitize=thread -fno-omit-frame-pointer")
-set(CMAKE_CXX_FLAGS_SAN "${CMAKE_CXX_FLAGS_RELEASE} ${SAN_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS_SAN "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${SAN_FLAGS}")
-set(CMAKE_SHARED_LINKER_FLAGS_SAN "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${SAN_FLAGS}")
-set(CMAKE_MODULE_LINKER_FLAGS_SAN "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} ${SAN_FLAGS}")
-set(CMAKE_STATIC_LINKER_FLAGS_SAN "${CMAKE_STATIC_LINKER_FLAGS_RELEASE} ${SAN_FLAGS}")
+add_config(
+	San
+	CXX_FLAGS "-g -O2 -fsanitize=thread -fno-omit-frame-pointer -DNDEBUG"
+	LINKER_FLAGS "-g -O2 -fsanitize=thread -fno-omit-frame-pointer"
+)
 if (CMAKE_BUILD_TYPE STREQUAL "San")
 	link_libraries(-ltsan)
 endif()
 
 # Release mode
-set(RELEASE_FLAGS "-s -Ofast -ffast-math -funroll-all-loops -flto -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${RELEASE_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${RELEASE_FLAGS}")
-set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} ${RELEASE_FLAGS}")
-set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} ${RELEASE_FLAGS}")
-set(CMAKE_STATIC_LINKER_FLAGS_RELEASE "${CMAKE_STATIC_LINKER_FLAGS_RELEASE} ${RELEASE_FLAGS}")
+add_config(
+	Release
+	CXX_FLAGS "-s -Ofast -ffast-math -funroll-all-loops -flto -DNDEBUG"
+	LINKER_FLAGS "-s -Ofast -ffast-math -funroll-all-loops -flto"
+)
+
 
 # Warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
-  -Wall \
-  -Wextra \
-  -Wshadow \
-  -Wnon-virtual-dtor \
-  -Wcast-align \
-  -Wunused \
-  -Woverloaded-virtual \
-  -Wcast-qual \
-  -Wconversion \
-  -Wno-unused-parameter\
-")
+include(cmake/AddCXXFlags.cmake)
+add_cxx_flags("-Wall -Wextra -Wshadow -Wcast-align -Wunused -Wcast-qual -Wconversion -Wno-unused-parameter")
+add_cxx_flag_checked("-Wnon-virtual-dtor")
+add_cxx_flag_checked("-Woverloaded-virtual")
+add_cxx_flag_checked("-Wold-style-cast")     
+add_cxx_flag_checked("-Wsuggest-override")
+add_cxx_flag_checked("-Wundef")
+add_cxx_flag_checked("-Wconditionally-supported")
+add_cxx_flag_checked("-Wzero-as-null-pointer-constant")
+#add_cxx_flag_checked("-Wsuggest-final-methods")
+#add_cxx_flag_checked("-Wsuggest-final-types")
 
 # Output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -93,6 +91,7 @@ add_subdirectory(tests)
 # utils
 add_custom_target(update COMMAND cmake .)
 
+# debug output
 string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE)
 message(STATUS "")
 message(STATUS "==============================================================")
