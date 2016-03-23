@@ -3,11 +3,12 @@
 
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/Tooling/CompilationDatabase.h>
-#include <clang/Tooling/Refactoring.h>
-#include <llvm-3.6/llvm/ADT/ArrayRef.h>
+#include <clang/Tooling/Tooling.h>
+#include <llvm/ADT/ArrayRef.h>
 #include <string>
 
 #include "refactoring.h"
+#include "replacements.h"
 
 namespace Refactor {
 
@@ -23,18 +24,19 @@ public:
 
   void addRefactoring(const Refactoring& task);
 
-  clang::tooling::Replacements& getReplacements();
+  Replacements& getReplacements();
 
   int run();
   bool save();
 
 private:
-  clang::tooling::RefactoringTool tool_;
-
+  clang::tooling::ClangTool tool_;
   clang::ast_matchers::MatchFinder finder_;
 
   // storage of actions
   RefactoringActions actions_;
+
+  Replacements replacements_;
 };
 
 } // namespace Refactor

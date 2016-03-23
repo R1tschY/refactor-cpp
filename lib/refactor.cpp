@@ -1,7 +1,6 @@
 #include "refactor.h"
 
 #include <clang/Tooling/CommonOptionsParser.h>
-#include <clang/Tooling/Core/Replacement.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/Signals.h>
@@ -12,7 +11,8 @@
 
 #include "refactoring.h"
 #include "refactoringapplication.h"
-#include "renamefunction.h"
+#include "refactorings/rename/renamefunction.h"
+#include "replacements.h"
 
 using namespace clang;
 using namespace clang::tooling;
@@ -93,8 +93,8 @@ int main(int argc, const char *argv[])
   }
 
   llvm::outs() << "Replacements collected:\n";
-  for (auto &r : app.getReplacements()) {
-    llvm::outs() << r.toString() << "\n";
+  for (auto &r : app.getReplacements().get()) {
+    llvm::outs() << r.getReplacement().toString() << "\n";
   }
 
   return app.save() ? 0 : 1;

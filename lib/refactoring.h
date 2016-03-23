@@ -2,8 +2,10 @@
 #define LIB_REFACTORING_H_
 
 #include <clang/ASTMatchers/ASTMatchFinder.h>
-#include <clang/Tooling/Core/Replacement.h>
 #include <memory>
+#include <vector>
+
+#include "replacements.h"
 
 namespace Refactor {
 
@@ -21,7 +23,7 @@ public:
 
   virtual std::unique_ptr<RefactoringAction> createAction
   (
-    clang::tooling::Replacements& replacements,
+    Replacements& replacements,
     clang::ast_matchers::MatchFinder& Finder
   ) const = 0;
 };

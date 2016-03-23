@@ -1,10 +1,12 @@
 #ifndef LIB_REFACTOR_H_
 #define LIB_REFACTOR_H_
 
-#include "export.h"
+#include "refactor-cpp-export.h"
 
 namespace Refactor {
 
+/// \todo rename to runRefactoringFromCmdln
+/// \todo use llvm::ArrayRef<T>
 REFACTOR_EXPORT int main(int argc, const char *argv[]);
 
 } // namespace Refactor

@@ -8,9 +8,8 @@
 #include <clang/Frontend/TextDiagnosticPrinter.h>
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <clang/Tooling/Core/Replacement.h>
-#include <clang/Tooling/Tooling.h>
-#include <llvm-3.6/llvm/ADT/IntrusiveRefCntPtr.h>
-#include <llvm-3.6/llvm/Support/raw_ostream.h>
+#include <llvm/ADT/IntrusiveRefCntPtr.h>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <vector>
 
@@ -34,13 +33,15 @@ RefactoringApplication::~RefactoringApplication()
 
 void RefactoringApplication::addRefactoring(const Refactoring& task)
 {
-  Replacements& replacements = tool_.getReplacements();
-  actions_.emplace_back(task.createAction(replacements, finder_));
+  actions_.emplace_back(task.createAction(replacements_, finder_));
 }
 
 int RefactoringApplication::run()
 {
-  return tool_.run(newFrontendActionFactory(&finder_).get());
+  int result = tool_.run(newFrontendActionFactory(&finder_).get());
+  replacements_.deduplicate();
+  // TODO: search conflicts
+  return result;
 }
 
 bool RefactoringApplication::save()
@@ -56,7 +57,9 @@ bool RefactoringApplication::save()
   SourceManager sources(diagnostics, tool_.getFiles());
   Rewriter rewriter(sources, default_lang_options);
 
-  if (!tool_.applyAllReplacements(rewriter)) {
+  auto replacements = replacements_.getRawReplacements();
+  if (!clang::tooling::applyAllReplacements(replacements, rewriter))
+  {
     llvm::errs() << "Skipped some replacements.\n";
   }
 
@@ -65,7 +68,7 @@ bool RefactoringApplication::save()
 
 Replacements& RefactoringApplication::getReplacements()
 {
-  return tool_.getReplacements();
+  return replacements_;
 }
 
 } // namespace Refactor
