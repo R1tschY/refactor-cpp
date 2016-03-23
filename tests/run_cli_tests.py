@@ -61,6 +61,7 @@ def print_test_result(name, result, reason = None):
 
 def cmd_print(msg):
   Style.print(Style.Cmd, msg)
+  sys.stdout.flush()
 
 def process_test(root, name):
   test_name = os.path.join(root, name)
