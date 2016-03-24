@@ -1,5 +1,5 @@
-#ifndef LIB_CORE_UTILS_H_
-#define LIB_CORE_UTILS_H_
+#ifndef LIB_UTILS_UTILS_H_
+#define LIB_UTILS_UTILS_H_
 
 #include <clang/AST/ASTContext.h>
 #include <clang/Basic/SourceLocation.h>
@@ -10,4 +10,4 @@ void printRenaming(clang::ASTContext* context, clang::CharSourceRange range, llv
 
 } // namespace Refactor
 
-#endif /* LIB_CORE_UTILS_H_ */
+#endif /* LIB_UTILS_UTILS_H_ */

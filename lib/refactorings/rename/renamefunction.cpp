@@ -5,101 +5,97 @@
 #include <clang/AST/Expr.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
 #include <clang/ASTMatchers/ASTMatchersInternal.h>
+#include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/Basic/SourceLocation.h>
 #include <clang/Basic/SourceManager.h>
 #include <llvm/ADT/VariadicFunction.h>
-#include <algorithm>
 #include <cassert>
 #include <stdexcept>
 #include <vector>
 
-#include "../../core/parsers.h"
-#include "../../core/utils.h"
+#include "../../replacementbuilder.h"
+#include "../../replacementgroups.h"
 
 using namespace clang;
+using namespace clang::ast_matchers;
+
 
 namespace Refactor {
 
 namespace {
 
-class CallRenamer: public clang::ast_matchers::MatchFinder::MatchCallback
-{
-public:
-  CallRenamer(Replacements &Replace, const RenameFunction& refactoring)
-    : replacements_(Replace), new_name_(refactoring.getNewName())
-  {
-  }
-
-  void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) override
-  {
-    const DeclRefExpr *M = Result.Nodes.getNodeAs<DeclRefExpr>("function");
-    assert(M);
-
-    CharSourceRange char_range = CharSourceRange::getTokenRange(SourceRange(M->getLocation()));
-
-    printRenaming(Result.Context, char_range, new_name_);
-
-    replacements_.addReplacement(
-      Certainty::Safe,
-      *Result.SourceManager,
-      char_range,
-      new_name_);
-  }
-
-private:
-  Replacements& replacements_;
-  std::string new_name_;
-};
-
-class DeclRenamer: public clang::ast_matchers::MatchFinder::MatchCallback
-{
-public:
-  DeclRenamer(Replacements &Replace, const RenameFunction& refactoring)
-    : replacements_(Replace), new_name_(refactoring.getNewName())
-  {
-  }
-
-  void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) override
-  {
-    const FunctionDecl *D = Result.Nodes.getDeclAs<FunctionDecl>("function");
-    assert(D);
-
-    CharSourceRange char_range =
-      CharSourceRange::getTokenRange(SourceRange(D->getLocation()));
-
-    //printRenaming(Result.Context, char_range, new_name_);
-
-    replacements_.addReplacement(
-      Certainty::Safe,
-      *Result.SourceManager,
-      char_range,
-      new_name_);
-  }
-
-private:
-  Replacements& replacements_;
-  std::string new_name_;
-};
-
 class RenameFunctionAction : public RefactoringAction
 {
+  class CallRenamer: public MatchFinder::MatchCallback {
+  public:
+    CallRenamer(RenameFunctionAction& action)
+      : action_(action)
+    { }
+
+    void run(const MatchFinder::MatchResult &Result) override
+    {
+      const DeclRefExpr *M = Result.Nodes.getNodeAs<DeclRefExpr>("function");
+      assert(M);
+
+      auto builder = action_.refactor(
+        Confidence::Safe, "rename function", *Result.SourceManager
+      );
+      builder.replace(
+        CharSourceRange::getTokenRange(SourceRange(M->getLocation())),
+        action_.refactoring_.getNewName()
+      );
+    }
+
+  private:
+    RenameFunctionAction& action_;
+  };
+
+  class DeclRenamer: public MatchFinder::MatchCallback {
+  public:
+    DeclRenamer(RenameFunctionAction& action)
+      : action_(action)
+    { }
+
+    void run(const MatchFinder::MatchResult &Result) override
+    {
+      const FunctionDecl *D = Result.Nodes.getDeclAs<FunctionDecl>("function");
+      assert(D);
+
+      auto builder = action_.refactor(
+        Confidence::Safe, "rename function", *Result.SourceManager
+      );
+      builder.replace(
+        CharSourceRange::getTokenRange(SourceRange(D->getLocation())),
+        action_.refactoring_.getNewName()
+      );
+    }
+
+  private:
+    RenameFunctionAction& action_;
+  };
+
+
 public:
   RenameFunctionAction(
-    Replacements& replacements,
-    clang::ast_matchers::MatchFinder& Finder,
+    llvm::StringRef name,
+    RefactoringContext& context,
     const RenameFunction& refactoring)
-    :
-      call_renamer_(replacements, refactoring),
-      decl_renamer_(replacements, refactoring)
+    : RefactoringAction(name, context),
+      call_renamer_(*this),
+      decl_renamer_(*this),
+      refactoring_(refactoring)
+  { }
+
+  void registerMatchers(clang::ast_matchers::MatchFinder& finder) override
   {
     using namespace clang;
     using namespace clang::ast_matchers;
 
-    if (refactoring.allowUnsafe())
+    if (refactoring_.allowUnsafe())
     {
-      Finder.addMatcher(
+      finder.addMatcher(
         declRefExpr(
-            to(functionDecl(hasName(refactoring.getOldName()))),
+            to(functionDecl(hasName(refactoring_.getOldName()))),
 
             // don't replace if used in function pointer template parameter substitutions
             unless(hasAncestor(substNonTypeTemplateParmExpr()))
@@ -108,38 +104,34 @@ public:
     }
     else
     {
-      Finder.addMatcher(
+      finder.addMatcher(
         declRefExpr(
-            to(functionDecl(hasName(refactoring.getOldName()))),
+            to(functionDecl(hasName(refactoring_.getOldName()))),
             unless(isInTemplateInstantiation())
         ).bind("function"),
         &call_renamer_);
     }
 
-    Finder.addMatcher(
-      functionDecl(hasName(refactoring.getOldName())).bind("function"),
+    finder.addMatcher(
+      functionDecl(hasName(refactoring_.getOldName())).bind("function"),
       &decl_renamer_);
   }
 
 private:
   CallRenamer call_renamer_;
   DeclRenamer decl_renamer_;
+  const RenameFunction& refactoring_;
 };
-
 
 }  // namespace
 
 // RenameFunction
 
-RenameFunction::~RenameFunction()
+RenameFunction::RenameFunction(llvm::StringRef name, const RefactoringArgs& allargs)
+: Refactoring(name)
 {
-}
-
-std::unique_ptr<RenameFunction> RenameFunction::createFromCommand(llvm::StringRef command)
-{
-  // parse commands and check argument count
-  CommandOptions options = Parsers::parseCommandOptions(command);
-  if (options.arguments.size() != 2)
+  auto& args = allargs.getArgs();
+  if (args.size() != 2)
   {
     // TODO:
     throw std::invalid_argument(
@@ -147,46 +139,31 @@ std::unique_ptr<RenameFunction> RenameFunction::createFromCommand(llvm::StringRe
       "Syntax: -rename-function OLD,NEW");
   }
 
-  // create refactoring
-  return createFromNames(options.arguments[0], options.arguments[1]);
-}
-
-std::unique_ptr<RenameFunction> RenameFunction::createFromNames(
-  llvm::StringRef definition, llvm::StringRef new_name)
-{
-  std::string definition_s;
-
   // ensure that `definition` starts with `::`
+  llvm::StringRef definition = args[0];
   if (!definition.startswith("::"))
   {
-    definition_s.assign("::", 2);
-    definition_s.append(definition.begin(), definition.end());
+    old_name_.reserve(definition.size() + 2);
+    old_name_.assign("::", 2);
+    old_name_.append(definition.begin(), definition.end());
   }
   else
   {
-    definition_s = definition;
+    old_name_ = definition;
   }
 
-  // parse `definition`
+  new_name_ = args[1];
+
+  // TODO: parse `definition`
   //FuncDef decl = Parsers::parseFunctionDefinition(definition);
-
-  // create refactoring
-  auto result = std::unique_ptr<RenameFunction>(new RenameFunction(
-    definition_s, new_name // TODO: check input
-  ));
-  return result;
-}
-
-RenameFunction::RenameFunction(std::string definition, std::string new_name)
-: old_name_(std::move(definition)), new_name_(std::move(new_name))
-{
 }
 
 std::unique_ptr<RefactoringAction> RenameFunction::createAction(
-  Replacements& replacements,
-  clang::ast_matchers::MatchFinder& Finder) const
+  llvm::StringRef name,
+  RefactoringContext& context
+) const
 {
-  return std::make_unique<RenameFunctionAction>(replacements, Finder, *this);
+  return std::make_unique<RenameFunctionAction>(name, context, *this);
 }
 
 } // namespace Refactor

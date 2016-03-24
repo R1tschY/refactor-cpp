@@ -1,5 +1,5 @@
-#ifndef LIB_CORE_PARSERS_H_
-#define LIB_CORE_PARSERS_H_
+#ifndef LIB_UTILS_PARSERS_H_
+#define LIB_UTILS_PARSERS_H_
 
 #include <map>
 #include <string>
@@ -11,16 +11,9 @@ struct FuncDef {
   std::string name;
 };
 
-struct CommandOptions {
-//  std::map<std::string, std::string> options;
-  std::vector<std::string> arguments;
-};
-
 namespace Parsers {
 
 FuncDef parseFunctionDefinition(const std::string& def);
-
-CommandOptions parseCommandOptions(const std::string& command);
 
 bool isIdentifier(const std::string& value);
 
@@ -28,4 +21,4 @@ bool isIdentifier(const std::string& value);
 
 } // namespace Refactor
 
-#endif /* LIB_CORE_PARSERS_H_ */
+#endif /* LIB_UTILS_PARSERS_H_ */

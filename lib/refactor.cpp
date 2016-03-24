@@ -3,6 +3,7 @@
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/Registry.h>
 #include <llvm/Support/Signals.h>
 #include <exception>
 #include <memory>
@@ -10,13 +11,16 @@
 #include <vector>
 
 #include "refactoring.h"
-#include "refactoringapplication.h"
-#include "refactorings/rename/renamefunction.h"
-#include "replacements.h"
+#include "refactoringargs.h"
+#include "refactoringmodule.h"
+#include "refactoringregistry.h"
+#include "refactoringtask.h"
 
 using namespace clang;
 using namespace clang::tooling;
 using namespace llvm;
+
+template class llvm::Registry<Refactor::RefactoringModuleRegistry>;
 
 static cl::extrahelp CommonHelp(CommonOptionsParser::HelpMessage);
 
@@ -49,18 +53,30 @@ int main(int argc, const char *argv[])
   llvm::sys::PrintStackTraceOnErrorSignal();
 
   CommonOptionsParser OptionsParser(argc, argv, RefactorCppCategory);
-  RefactoringApplication app(
+  RefactoringTask app(
     OptionsParser.getCompilations(),
     OptionsParser.getSourcePathList());
 
   Refactorings refactorings;
+
+  // get all refactoring factories
+  RefactoringFactories factories;
+  for (
+    auto i = RefactoringModuleRegistry::begin();
+    i != RefactoringModuleRegistry::end();
+    ++i)
+  {
+    i->instantiate()->addFactories(factories);
+  }
 
   try
   {
     if (RenameOption.getNumOccurrences() > 0)
     {
       refactorings.emplace_back(
-        RenameFunction::createFromCommand(RenameOption.getValue())
+        factories.create(
+          "rename-function",
+          RefactoringArgs::fromString(RenameOption.getValue()))
       );
     }
     else
@@ -90,11 +106,6 @@ int main(int argc, const char *argv[])
   if (returncode != 0)
   {
     return returncode;
-  }
-
-  llvm::outs() << "Replacements collected:\n";
-  for (auto &r : app.getReplacements().get()) {
-    llvm::outs() << r.getReplacement().toString() << "\n";
   }
 
   return app.save() ? 0 : 1;

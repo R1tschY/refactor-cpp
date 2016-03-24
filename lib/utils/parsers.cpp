@@ -1,7 +1,7 @@
 
 #define BOOST_PP_VARIADICS 1
 
-#include "parsers.h"
+#include "../utils/parsers.h"
 
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
@@ -84,18 +84,6 @@ FuncDef Parsers::parseFunctionDefinition(const std::string& def)
   {
     throw std::runtime_error("function definition parse failed");
   }
-  return result;
-}
-
-CommandOptions Parsers::parseCommandOptions(const std::string& command)
-{
-  CommandOptions result;
-
-  boost::algorithm::split(
-    result.arguments,
-    command,
-    [](char c){ return c == ','; });
-
   return result;
 }
 

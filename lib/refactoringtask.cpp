@@ -1,4 +1,4 @@
-#include "refactoringapplication.h"
+#include "refactoringtask.h"
 
 #include <clang/Basic/Diagnostic.h>
 #include <clang/Basic/DiagnosticIDs.h>
@@ -9,9 +9,13 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <clang/Tooling/Core/Replacement.h>
 #include <llvm/ADT/IntrusiveRefCntPtr.h>
+#include <llvm/ADT/StringRef.h>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <vector>
+
+#include "refactoringcontext.h"
+#include "utils/algorithm.h"
 
 using namespace clang;
 using namespace clang::tooling;
@@ -19,7 +23,7 @@ using namespace llvm;
 
 namespace Refactor {
 
-RefactoringApplication::RefactoringApplication(
+RefactoringTask::RefactoringTask(
   const clang::tooling::CompilationDatabase &compilations,
   llvm::ArrayRef<std::string> source_paths
 )
@@ -27,24 +31,31 @@ RefactoringApplication::RefactoringApplication(
 {
 }
 
-RefactoringApplication::~RefactoringApplication()
+RefactoringTask::~RefactoringTask()
 {
 }
 
-void RefactoringApplication::addRefactoring(const Refactoring& task)
+void RefactoringTask::addRefactoring(const Refactoring& task)
 {
-  actions_.emplace_back(task.createAction(replacements_, finder_));
+  actions_.push_back(task.createAction(context_));
 }
 
-int RefactoringApplication::run()
+int RefactoringTask::run()
 {
-  int result = tool_.run(newFrontendActionFactory(&finder_).get());
-  replacements_.deduplicate();
+  // get matchers
+  clang::ast_matchers::MatchFinder finder;
+  for (auto& action : actions_)
+  {
+    action->registerMatchers(finder);
+  }
+
+  // run matchers and generate replacements
+  int result = tool_.run(newFrontendActionFactory(&finder).get());
   // TODO: search conflicts
   return result;
 }
 
-bool RefactoringApplication::save()
+bool RefactoringTask::save()
 {
   LangOptions default_lang_options;
   IntrusiveRefCntPtr<DiagnosticOptions> diag_opts = new DiagnosticOptions();
@@ -57,7 +68,14 @@ bool RefactoringApplication::save()
   SourceManager sources(diagnostics, tool_.getFiles());
   Rewriter rewriter(sources, default_lang_options);
 
-  auto replacements = replacements_.getRawReplacements();
+  auto replacements = getReplacements(context_.getReplacements());
+  Support::deduplicate(replacements);
+
+  for (auto& replacement : replacements)
+  {
+    llvm::outs() << replacement.toString() << '\n';
+  }
+
   if (!clang::tooling::applyAllReplacements(replacements, rewriter))
   {
     llvm::errs() << "Skipped some replacements.\n";
@@ -66,9 +84,9 @@ bool RefactoringApplication::save()
   return !rewriter.overwriteChangedFiles();
 }
 
-Replacements& RefactoringApplication::getReplacements()
+ReplacementGroups& RefactoringTask::getReplacementGroups()
 {
-  return replacements_;
+  return context_.getReplacements();
 }
 
 } // namespace Refactor
