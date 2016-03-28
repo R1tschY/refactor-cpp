@@ -14,10 +14,6 @@ set_target_properties(RefactorCppLib
 # Includes / Libs
 target_include_directories(RefactorCppLib SYSTEM PUBLIC ${Boost_INCLUDE_DIRS})
 
-# Boost
-target_link_libraries(RefactorCppLib ${Boost_LIBRARIES})
-
-
 # Clang
 target_link_libraries(RefactorCppLib PRIVATE ${LLVM_MODULE_LIBS} ${CLANG_LIBS})
 target_include_directories(RefactorCppLib SYSTEM PRIVATE ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
