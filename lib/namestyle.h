@@ -3,24 +3,16 @@
 #ifndef LIB_NAMESTYLE_H_
 #define LIB_NAMESTYLE_H_
 
-namespace Refactor {
+#include <string>
+#include <cctype>
+#include <cstddef>
+#include <vector>
+#include <functional>
+#include <llvm/ADT/StringRef.h>
 
-enum class TypeNameClass
-{
-  Record,
-  Method,
-  StaticMethod,
-  Function,
-  Namespace,
-  Member,
-  Constant,
-  Macro,
-  Parameter,
-  TemplateParameter,
-  SourceFile,
-  HeaderFile,
-  TestFile
-};
+#include "refactor-cpp-export.h"
+
+namespace Refactor {
 
 /// \brief Capitalization of name
 ///
@@ -60,10 +52,48 @@ struct TypeNameStyle
 class NameStyle
 {
 public:
-  std::map<TypeNameClass, TypeNameStyle> variant1;
-  // OR:
+  TypeNameStyle namespace_;
 
+  TypeNameStyle records;
+
+  TypeNameStyle methods;
+  TypeNameStyle static_method;
+  TypeNameStyle function;
+  TypeNameStyle getter;
+  TypeNameStyle setter;
+  TypeNameStyle bool_getter;
+
+  TypeNameStyle variable;
+  TypeNameStyle field;
+  TypeNameStyle constant;
+  TypeNameStyle parameter;
+  TypeNameStyle template_parameter;
+
+  TypeNameStyle macro;
+
+  TypeNameStyle source_file;
+  TypeNameStyle header_file;
+  TypeNameStyle test_file;
 };
+
+inline
+char escapeIdentifierChar(char id)
+{
+  return std::isalnum(id) ? id : '_';
+}
+
+REFACTOR_EXPORT
+std::string joinIdentifier(const std::vector<std::string>& parts, const TypeNameStyle& style);
+
+REFACTOR_EXPORT
+std::vector<std::string> splitIdentifer(llvm::StringRef id, bool* ok = nullptr);
+
+using NameStyleFactory = std::function<NameStyle(llvm::StringRef)>;
+
+void registerNameStyle(llvm::StringRef id, NameStyleFactory factory);
+
+NameStyle getNameStyle(llvm::StringRef id);
+std::vector<std::string> getRegisteredNameStyles();
 
 }  // namespace Refactor
 

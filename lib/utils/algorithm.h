@@ -72,6 +72,22 @@ void deduplicate(Container& container)
   );
 }
 
+template<typename Generator>
+void runNTimes(std::size_t n, Generator&& g)
+{
+  for (std::size_t i = n; i != 0; --i)
+  {
+    g();
+  }
+}
+
+template<typename In, typename Out, typename Func>
+void adjacentDifference(const In& lhs, Out& rhs, Func&& func)
+{
+  reserve(rhs, lhs.size());
+  std::adjacent_difference(lhs.begin(), lhs.end(), std::back_inserter(rhs), std::move(func));
+}
+
 /// \brief add copy of elements of \p rhs to \p lhs
 template<typename ContainerLhs, typename ContainerRhs>
 void appendByCopy(ContainerLhs& lhs, const ContainerRhs& rhs)
@@ -84,10 +100,7 @@ template<typename ContainerLhs, typename ContainerRhs>
 void appendByMove(ContainerLhs& lhs, ContainerRhs& rhs)
 {
   reserve(lhs, lhs.size() + rhs.size());
-  for (auto& r : rhs)
-  {
-    lhs.push_back(std::move(r));
-  }
+  std::move(rhs.begin(), rhs.end(), std::back_inserter(lhs));
   rhs.clear();
 }
 

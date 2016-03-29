@@ -16,9 +16,5 @@ link_directories(${LLVM_LIBRARY_DIRS})
 add_definitions(${LLVM_CFLAGS} ${CLANG_CFLAGS})
 add_definitions(-DBOOST_TEST_DYN_LINK)
 
-add_custom_command(TARGET RefactorUnitTests
-                   POST_BUILD
-                   COMMAND ./refactor-unit-tests -i -s --detect_fp_exceptions=y -l message
-                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                   COMMENT "Running refactor-unit-tests ..." VERBATIM)
+add_test(NAME unit-tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/refactor-unit-tests -i -s --detect_fp_exceptions=y -l message)
 add_dependencies(check RefactorUnitTests)
