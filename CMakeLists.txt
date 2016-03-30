@@ -9,6 +9,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++1y")
 
 include(cmake/AddConfig.cmake)
 
+# hardening
+include(cmake/CodeHardening.cmake)
+hardening(
+	ENABLE Format Fortify StackProtector Pie Relro BindNow
+)
+
 # Debug mode
 add_config(
 	Debug
@@ -36,10 +42,9 @@ endif()
 # Release mode
 add_config(
 	Release
-	CXX_FLAGS "-s -Ofast -ffast-math -funroll-all-loops -flto -DNDEBUG"
-	LINKER_FLAGS "-s -Ofast -ffast-math -funroll-all-loops -flto"
+	CXX_FLAGS "-s -O3 -funroll-all-loops -flto -DNDEBUG"
+	LINKER_FLAGS "-s -O3 -funroll-all-loops -flto"
 )
-
 
 # Warnings
 include(cmake/AddCXXFlags.cmake)
@@ -51,6 +56,9 @@ add_cxx_flag_checked("-Wsuggest-override")
 add_cxx_flag_checked("-Wundef")
 add_cxx_flag_checked("-Wconditionally-supported")
 add_cxx_flag_checked("-Wzero-as-null-pointer-constant")
+add_cxx_flag_checked("-Wnull-dereference") # gcc 6
+add_cxx_flag_checked("-Wduplicated-cond") # gcc 6
+add_cxx_flag_checked("-Wshift-negative-value") # gcc 6
 #add_cxx_flag_checked("-Wsuggest-final-methods")
 #add_cxx_flag_checked("-Wsuggest-final-types")
 

@@ -1,5 +1,6 @@
 include(CheckCXXCompilerFlag)
 include(CMakeParseArguments)
+include(CMakeUtils)
 
 # add_cxx_flags("flag ..." [variant])
 # adds flags to CMAKE_CXX_FLAGS or CMAKE_CXX_FLAGS_VARIANT
@@ -8,10 +9,10 @@ function(add_cxx_flags _flags)
   if(_variant)
     string(TOUPPER "_${_variant}" _variant)
   endif()
-  set(CMAKE_CXX_FLAGS${_variant} "${CMAKE_CXX_FLAGS${_variant}} ${_flag}" PARENT_SCOPE)
+  set(CMAKE_CXX_FLAGS${_variant} "${CMAKE_CXX_FLAGS${_variant}} ${_flags}" PARENT_SCOPE)
 endfunction()
 
-# add_cxx_flag_checked("flag ..." [variant] [REQUIRED])
+# add_cxx_flag_checked("flag ..." [build_type] [REQUIRED])
 # add c++ compiler flag if compiler support it.
 #
 # if the flag is supported CMAKE_CXX_FLAGS is updated and HAVE_CXX_FLAG_<flag ...> is set
@@ -37,3 +38,61 @@ function(add_cxx_flag_checked _flag)
 		message(ERROR "required flag `${_flag}' is not supported by c++ compiler")
   endif()
 endfunction()
+
+# add_flags(
+#   [CXX "--flag ..."] 
+#   [C "--flag ..."] 
+#   [CPP "-DDEFINE=0 ..."]
+#   [BUILD_TYPE build_type]
+#   [PARENT_SCOPE]
+# )
+function(add_flags)
+
+	# options
+	
+  set(options )
+  set(oneValueArgs CXX C CPP LD BUILD_TYPE)
+  set(multiValueArgs )
+  set(prefix _add_flags)
+  cmake_parse_arguments(${prefix} "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+	# build type
+	
+	set(${prefix}_variant ${${prefix}_BUILD_TYPE})
+  if(${prefix}_variant)
+    string(TOUPPER "_${${prefix}_variant}" ${prefix}_variant)
+  endif()
+  
+  # flags
+  
+  if (${prefix}_C)
+	  append(CMAKE_C_FLAGS${${prefix}_variant} " ${${prefix}_C}")
+	endif()
+	
+	if (${prefix}_CXX)
+	  append(CMAKE_CXX_FLAGS${${prefix}_variant} " ${${prefix}_CXX}")
+	endif()
+	
+	if (${prefix}_CPP)
+  	append(CMAKE_C_FLAGS${${prefix}_variant} " ${${prefix}_CPP}")
+  	append(CMAKE_CXX_FLAGS${${prefix}_variant} " ${${prefix}_CPP}")
+  endif()
+  
+  if (${prefix}_LD)
+  	append(CMAKE_EXE_LINKER_FLAGS${${prefix}_variant} " ${${prefix}_LD}")
+  	append(CMAKE_SHARED_LINKER_FLAGS${${prefix}_variant} " ${${prefix}_LD}")
+  	append(CMAKE_MODULE_LINKER_FLAGS${${prefix}_variant} " ${${prefix}_LD}")
+  endif()
+  
+  # scope
+  
+  move_to_parent(CMAKE_C_FLAGS${${prefix}_variant})
+	move_to_parent(CMAKE_CXX_FLAGS${${prefix}_variant})
+	move_to_parent(CMAKE_EXE_LINKER_FLAGS${${prefix}_variant})
+	move_to_parent(CMAKE_SHARED_LINKER_FLAGS${${prefix}_variant})
+	move_to_parent(CMAKE_MODULE_LINKER_FLAGS${${prefix}_variant})
+	
+endfunction()
+
+
+
