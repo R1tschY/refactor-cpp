@@ -2,18 +2,12 @@ cmake_minimum_required (VERSION 3.0.0)
 project (RefactorCpp)
 
 # include extra local modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # C++14
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++1y")
 
 include(cmake/AddConfig.cmake)
-
-# hardening
-include(cmake/CodeHardening.cmake)
-hardening(
-	ENABLE Format Fortify StackProtector Pie Relro BindNow
-)
 
 # Debug mode
 add_config(
@@ -33,11 +27,8 @@ add_config(
 add_config(
 	San
 	CXX_FLAGS "-g -O2 -fsanitize=thread -fno-omit-frame-pointer -DNDEBUG"
-	LINKER_FLAGS "-g -O2 -fsanitize=thread -fno-omit-frame-pointer"
+	LINKER_FLAGS "-g -O2 -fsanitize=thread -ltsan -fno-omit-frame-pointer"
 )
-if (CMAKE_BUILD_TYPE STREQUAL "San")
-	link_libraries(-ltsan)
-endif()
 
 # Release mode
 add_config(
@@ -61,6 +52,15 @@ add_cxx_flag_checked("-Wduplicated-cond") # gcc 6
 add_cxx_flag_checked("-Wshift-negative-value") # gcc 6
 #add_cxx_flag_checked("-Wsuggest-final-methods")
 #add_cxx_flag_checked("-Wsuggest-final-types")
+
+# hardening
+include(cmake/CodeHardening.cmake)
+hardening(
+    ENABLE Format Fortify StackProtector Pie Relro BindNow
+)
+
+# Coverage
+include(cmake/CodeCoverage.cmake)
 
 # Output directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)

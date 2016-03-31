@@ -12,7 +12,7 @@ include(AddCXXFlags)
 # see https://wiki.debian.org/Hardening
 function(hardening)
 	
-	# options
+  # options
 	
   set(options ALL)
   set(oneValueArgs BUILD_TYPE)

@@ -16,5 +16,17 @@ link_directories(${LLVM_LIBRARY_DIRS})
 add_definitions(${LLVM_CFLAGS} ${CLANG_CFLAGS})
 add_definitions(-DBOOST_TEST_DYN_LINK)
 
-add_test(NAME unit-tests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/refactor-unit-tests -i -s --detect_fp_exceptions=y -l message)
+set(unit_test_command ${CMAKE_CURRENT_BINARY_DIR}/refactor-unit-tests -i -s --detect_fp_exceptions=y -l message)
+add_test(NAME unit-tests COMMAND ${unit_test_command})
 add_dependencies(check RefactorUnitTests)
+
+# coverage
+
+set(GENHTML_FLAGS "${GENHTML_FLAGS} --title ${PROJECT_NAME} --prefix ${CMAKE_SOURCE_DIR} --num-spaces 2")
+get_filename_component(_libdir ${CMAKE_CURRENT_SOURCE_DIR}/../lib REALPATH)
+add_coverage_target(
+  TARGET coverage
+  COMMAND ${unit_test_command}
+  OUTPUT ${CMAKE_BINARY_DIR}/coverage
+  INCLUDE '${_libdir}/*'
+)
