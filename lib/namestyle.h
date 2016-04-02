@@ -49,6 +49,21 @@ struct TypeNameStyle
   std::string prefix;
 };
 
+enum class IncludeGuardStyleType
+{
+  No,
+  Filename,
+  Path,
+  UniqueId,
+  PragmaOnce
+};
+
+struct IncludeGuardStyle
+{
+  TypeNameStyle name_style;
+  IncludeGuardStyleType type;
+};
+
 class NameStyle
 {
 public:
@@ -74,6 +89,8 @@ public:
   TypeNameStyle source_file;
   TypeNameStyle header_file;
   TypeNameStyle test_file;
+
+  IncludeGuardStyle include_guard;
 };
 
 inline

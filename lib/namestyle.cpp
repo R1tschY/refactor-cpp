@@ -333,6 +333,11 @@ NameStyleRegistry::NameStyleRegistry()
       result.test_file = common_style;
       result.test_file.suffix = "_test.cpp";
 
+      // include guard
+
+      result.include_guard.name_style.capitalization = Capitalization::UpperCase;
+      result.include_guard.type = IncludeGuardStyleType::Path;
+
       return result;
     }
   );
@@ -400,6 +405,11 @@ NameStyleRegistry::NameStyleRegistry()
       // test file
       result.test_file = common_style;
       result.test_file.suffix = "_test.cpp";
+
+      // include guard
+
+      result.include_guard.name_style.capitalization = Capitalization::UpperCase;
+      result.include_guard.type = IncludeGuardStyleType::Path;
 
       return result;
     }
