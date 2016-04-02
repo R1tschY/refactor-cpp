@@ -30,6 +30,7 @@
 
 #include "refactoring.h"
 #include "refactoringargs.h"
+#include "externcallback.h"
 
 
 namespace Refactor {
@@ -80,6 +81,7 @@ public:
   virtual ~RefactoringModule() = default;
 
   virtual void addFactories(RefactoringFactories& factories) = 0;
+  virtual void addCallback(ExternCallbacks& callbacks) { };
 };
 
 } // namespace Refactor
