@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0.0)
-project (RefactorCpp)
+project (RefactorCpp VERSION 0.1)
 
 # include extra local modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_SOURCE_DIR}/cmake)
@@ -53,6 +53,9 @@ add_cxx_flag_checked("-Wshift-negative-value") # gcc 6
 #add_cxx_flag_checked("-Wsuggest-final-methods")
 #add_cxx_flag_checked("-Wsuggest-final-types")
 
+# Eclipse
+add_flags(CXX "-fmessage-length=0" C "-fmessage-length=0" LD "-fmessage-length=0")
+
 # hardening
 include(CodeHardening)
 hardening(ALL)
@@ -87,7 +90,12 @@ find_package(Boost QUIET REQUIRED)
 
 # Clang
 find_package(LLVM REQUIRED)
-find_package(Clang REQUIRED)
+find_package(Clang 
+  REQUIRED 
+  COMPONENTS Frontend Serialization Driver Tooling ToolingCore Parse Sema 
+             Analysis RewriteFrontend Rewrite Edit AST ASTMatchers Lex Basic
+             # CodeGen  Index StaticAnalyzerFrontend StaticAnalyzerCheckers StaticAnalyzerCore Format
+)
 
 #
 add_subdirectory(lib)
@@ -115,9 +123,9 @@ else()
   message(STATUS "  Boost:    not found") 
 endif()
 if (LLVM_FOUND)
-  message(STATUS "  LLVM:     ${LLVM_VERSION}")
+  message(STATUS "  Clang:    ${LLVM_VERSION}")
 else()
-  message(STATUS "  LLVM:     not found") 
+  message(STATUS "  Clang:    not found") 
 endif()
 message(STATUS "")
 message(STATUS "==============================================================")
