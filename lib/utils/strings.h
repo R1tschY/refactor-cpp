@@ -23,6 +23,14 @@
 #ifndef LIB_UTILS_STRINGS_H_
 #define LIB_UTILS_STRINGS_H_
 
+#include <llvm/ADT/StringRef.h>
+#include <cstddef>
+#include <cstring>
+#include <string>
+#include <utility>
+
+#include "algorithm.h"
+
 namespace Refactor {
 namespace Support {
 
@@ -48,6 +56,63 @@ void split(llvm::StringRef string, llvm::StringRef seps, Func&& func)
     func(parts.first);
     string = parts.second;
   }
+}
+
+namespace details {
+
+template<typename StringRange>
+std::size_t string_length(const StringRange& range)
+{ return range.size(); }
+
+inline
+std::size_t string_length(const char* range)
+{ return strlen(range); }
+
+inline
+std::size_t string_length(char c)
+{ return 1; }
+
+template<typename StringRange>
+void append(std::string& s, const StringRange& range)
+{ s.append(std::begin(range), std::end(range)); }
+
+inline
+void append(std::string& s, const char* range)
+{ s.append(range); }
+
+inline
+void append(std::string& s, char c)
+{ s.push_back(c); }
+
+}  // namespace details
+
+template<typename...Strings>
+std::string concat(Strings&&...strings)
+{
+  // compute size
+//  std::size_t len = 0;
+//  foreach_argument(
+//    [&len](auto arg){ len += details::string_length(arg); },
+//    std::forward<Strings>(strings)...
+//  );
+
+  std::size_t len = accumulate_args(
+    [](auto arg){ return details::string_length(arg); },
+    0,
+    std::forward<Strings>(strings)...
+  );
+
+  // reserve size
+  std::string result;
+  result.reserve(len);
+
+  // build string
+  foreach_argument(
+    [&result](auto arg){ details::append(result, arg); },
+    std::forward<Strings>(strings)...
+  );
+
+  return result;
 }
 
 } // namespace Support

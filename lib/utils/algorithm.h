@@ -111,6 +111,20 @@ void assign(const ContainerLhs& lhs, const ContainerRhs& rhs)
   lhs.assign(rhs.begin(), rhs.end());
 }
 
+/// from https://twitter.com/SeanParent/status/558765089294020609
+template<typename Fun, typename...Args>
+void foreach_argument(Fun&& f, Args&&... args) {
+  using t = int[sizeof...(Args)];
+  (void)t{(f(std::forward<Args>(args)), 0)...};
+}
+
+template<typename Fun, typename...Args>
+std::size_t accumulate_args(Fun&& fmap, std::size_t init, Args&&... args) {
+  using t = int[sizeof...(Args)];
+  (void)t{(init += fmap(std::forward<Args>(args)), 0)...};
+  return init;
+}
+
 } // namespace Support
 } // namespace Refactor
 
