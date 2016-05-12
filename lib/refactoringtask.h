@@ -10,6 +10,7 @@
 #include "refactoringcontext.h"
 #include "replacementgroups.h"
 #include "utils/shortcuts.h"
+#include "3th-party/Tooling.h"
 
 namespace Refactor {
 
@@ -31,7 +32,7 @@ public:
   bool save();
 
 private:
-  ClangTool tool_;
+  clang::tooling::ClangTool_ tool_;
 
   // storage of actions
   RefactoringActions actions_;

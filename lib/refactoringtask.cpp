@@ -1,5 +1,6 @@
 #include "refactoringtask.h"
 
+#include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/Basic/Diagnostic.h>
 #include <clang/Basic/DiagnosticIDs.h>
 #include <clang/Basic/DiagnosticOptions.h>
@@ -9,12 +10,10 @@
 #include <clang/Rewrite/Core/Rewriter.h>
 #include <clang/Tooling/Core/Replacement.h>
 #include <llvm/ADT/IntrusiveRefCntPtr.h>
-#include <llvm/ADT/StringRef.h>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <vector>
 
-#include "refactoringcontext.h"
 #include "utils/algorithm.h"
 
 using namespace clang;
@@ -23,12 +22,21 @@ using namespace llvm;
 
 namespace Refactor {
 
+static
+CommandLineArguments setPseudoBinPath(const CommandLineArguments& in)
+{
+  CommandLineArguments result = in;
+  result[0] = (Twine(LLVM_BINDIR) + "/refactor-cpp").str();
+  return result;
+}
+
 RefactoringTask::RefactoringTask(
   const clang::tooling::CompilationDatabase &compilations,
   llvm::ArrayRef<std::string> source_paths
 )
 : tool_(compilations, source_paths)
 {
+  tool_.appendArgumentsAdjuster(&setPseudoBinPath);
 }
 
 RefactoringTask::~RefactoringTask()
