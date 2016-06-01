@@ -20,42 +20,26 @@
 /// IN THE SOFTWARE.
 ///
 
-#ifndef LIB_EXTERNCALLBACK_H_
-#define LIB_EXTERNCALLBACK_H_
-
-#include <llvm/ADT/StringRef.h>
-#include <cstddef>
-#include <memory>
-#include <vector>
+#include "hook.h"
 
 namespace Refactor {
 
-class ExternCallback
+void HookRegistry::registerHook(
+  std::unique_ptr<Hook> callback)
 {
-public:
-  virtual ~ExternCallback() = default;
+  if (!callback)
+    throw std::invalid_argument("callback");
 
-  virtual void onFileMoved(llvm::StringRef old_name, llvm::StringRef new_name) { }
-};
+  callbacks_.push_back(std::move(callback));
+}
 
-class ExternCallbacks
+void HookRegistry::onFileMoved(llvm::StringRef old_name,
+  llvm::StringRef new_name)
 {
-public:
-  using Collection = std::vector<std::unique_ptr<ExternCallback>>;
-
-  void registerCallback(std::unique_ptr<ExternCallback> callback);
-
-  void onFileMoved(llvm::StringRef old_name, llvm::StringRef new_name);
-
-  Collection::const_iterator begin() const { return callbacks_.begin(); }
-  Collection::const_iterator end() const { return callbacks_.end(); }
-  bool empty() const { return callbacks_.empty(); }
-  std::size_t size() const { return callbacks_.size(); }
-
-private:
-  std::vector<std::unique_ptr<ExternCallback>> callbacks_;
-};
+  for (auto& callback : callbacks_)
+  {
+    callback->onFileMoved(old_name, new_name);
+  }
+}
 
 } // namespace Refactor
-
-#endif /* LIB_EXTERNCALLBACK_H_ */

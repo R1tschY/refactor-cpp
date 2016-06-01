@@ -28,14 +28,15 @@
 #include <functional>
 #include <memory>
 
+#include "hook.h"
 #include "refactoring.h"
 #include "refactoringargs.h"
-#include "externcallback.h"
 
 
 namespace Refactor {
 
 
+/// \brief factory method to create a refactoring
 typedef std::function<
           std::unique_ptr<Refactoring>(
             llvm::StringRef name,
@@ -43,27 +44,24 @@ typedef std::function<
           )
         > RefactoringFactory;
 
+/// \brief factory for refactoring features
 class RefactoringFactories
 {
 public:
   typedef llvm::StringMap<RefactoringFactory> FactoryMap;
 
+  /// \brief register a refactoring feature from a factory method
   void registerRefactoring(llvm::StringRef name, RefactoringFactory factory);
 
+  /// \brief register a refactoring feature from a class
   template<typename T>
-  void registerRefactoring(llvm::StringRef name)
-  {
-    registerRefactoring(
-      name,
-      [](llvm::StringRef name, const RefactoringArgs& args)
-      {
-        return std::make_unique<T>(name, args);
-      }
-    );
-  }
+  void registerRefactoring(llvm::StringRef name);
 
+  /// \brief create a reafctoring from a \p name and \p args
   std::unique_ptr<Refactoring> create(
     llvm::StringRef name, const RefactoringArgs& args);
+
+  // read-only container support
 
   FactoryMap::const_iterator begin() const { return factories_.begin(); }
   FactoryMap::const_iterator end() const { return factories_.end(); }
@@ -74,15 +72,29 @@ private:
   FactoryMap factories_;
 };
 
-/// \brief
+/// \brief interface for modules to intergrate to system
 class RefactoringModule
 {
 public:
   virtual ~RefactoringModule() = default;
 
   virtual void addFactories(RefactoringFactories& factories) = 0;
-  virtual void addCallback(ExternCallbacks& callbacks) { };
+  virtual void addHooks(HookRegistry& hooks) { };
 };
+
+// implementation
+
+template<typename T>
+void RefactoringFactories::registerRefactoring(llvm::StringRef name)
+{
+  registerRefactoring(
+    name,
+    [](llvm::StringRef name, const RefactoringArgs& args)
+    {
+      return std::make_unique<T>(name, args);
+    }
+  );
+}
 
 } // namespace Refactor
 

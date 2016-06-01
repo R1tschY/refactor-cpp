@@ -20,23 +20,47 @@
 /// IN THE SOFTWARE.
 ///
 
-#include "externcallback.h"
+#ifndef LIB_HOOK_H_
+#define LIB_HOOK_H_
+
+#include <llvm/ADT/StringRef.h>
+#include <cstddef>
+#include <memory>
+#include <vector>
 
 namespace Refactor {
 
-void ExternCallbacks::registerCallback(
-  std::unique_ptr<ExternCallback> callback)
+class Hook
 {
-  callbacks_.push_back(std::move(callback));
-}
+public:
+  virtual ~Hook() = default;
 
-void ExternCallbacks::onFileMoved(llvm::StringRef old_name,
-  llvm::StringRef new_name)
+  virtual void onFileMoved(llvm::StringRef old_name, llvm::StringRef new_name) { }
+};
+
+class HookRegistry
 {
-  for (auto& callback : callbacks_)
-  {
-    callback->onFileMoved(old_name, new_name);
-  }
-}
+public:
+  using Collection = std::vector<std::unique_ptr<Hook>>;
+
+  /// \brief register a hook
+  /// \pre \code callback != nullptr \endcode
+  void registerHook(std::unique_ptr<Hook> callback);
+
+  /// \brief run onFileMoved hooks
+  void onFileMoved(llvm::StringRef old_name, llvm::StringRef new_name);
+
+  // read-only container support
+
+  Collection::const_iterator begin() const { return callbacks_.begin(); }
+  Collection::const_iterator end() const { return callbacks_.end(); }
+  bool empty() const { return callbacks_.empty(); }
+  std::size_t size() const { return callbacks_.size(); }
+
+private:
+  Collection callbacks_;
+};
 
 } // namespace Refactor
+
+#endif /* LIB_HOOK_H_ */
