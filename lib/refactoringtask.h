@@ -10,19 +10,20 @@
 #include "refactoringcontext.h"
 #include "replacementgroups.h"
 #include "utils/shortcuts.h"
-#include "3th-party/Tooling.h"
+#include "internals/clang.h"
 
 namespace Refactor {
+
+class Clang;
 
 /// \brief
 class RefactoringTask
 {
 public:
   RefactoringTask(
+    Clang& clang,
     const CompilationDatabase &compilations,
     ArrayRef<std::string> source_paths);
-
-  ~RefactoringTask();
 
   void addRefactoring(const Refactoring& task);
 
@@ -32,7 +33,9 @@ public:
   bool save();
 
 private:
-  clang::tooling::ClangTool_ tool_;
+  Clang& clang_;
+
+  clang::tooling::ClangTool tool_;
 
   // storage of actions
   RefactoringActions actions_;

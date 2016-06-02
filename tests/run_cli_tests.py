@@ -113,7 +113,6 @@ def process_test(root, name):
     arguments.insert(0, refactorbin)
     arguments.extend([
       '-p', os.path.abspath(actpath),
-      '-extra-arg=-I/usr/lib/clang/3.6/include' # FIXME
     ])
     arguments.extend(sources)
 

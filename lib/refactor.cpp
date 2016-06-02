@@ -15,6 +15,7 @@
 #include "refactoringmodule.h"
 #include "refactoringregistry.h"
 #include "refactoringtask.h"
+#include "utils/ascii.h"
 
 using namespace clang;
 using namespace clang::tooling;
@@ -35,6 +36,13 @@ static cl::opt<bool> FinalSyntaxCheck(
   cl::init(false),
   cl::cat(RefactorCppCategory));
 
+static cl::opt<bool> VerboseOption(
+  "verbose",
+  cl::desc("Print debug messages"),
+  cl::init(false),
+  cl::cat(RefactorCppCategory));
+
+
 //
 // Refactor C++ Refactorings
 //
@@ -53,20 +61,18 @@ int main(int argc, const char *argv[])
   llvm::sys::PrintStackTraceOnErrorSignal();
 
   CommonOptionsParser OptionsParser(argc, argv, RefactorCppCategory);
+  Clang clang;
   RefactoringTask app(
+    clang,
     OptionsParser.getCompilations(),
     OptionsParser.getSourcePathList());
-
   Refactorings refactorings;
 
   // get all refactoring factories
   RefactoringFactories factories;
-  for (
-    auto i = RefactoringModuleRegistry::begin();
-    i != RefactoringModuleRegistry::end();
-    ++i)
+  for (auto& module : RefactoringModuleRegistry::entries())
   {
-    i->instantiate()->addFactories(factories);
+    module.instantiate()->addFactories(factories);
   }
 
   try
@@ -87,7 +93,7 @@ int main(int argc, const char *argv[])
   }
   catch(const std::exception& e)
   {
-    llvm::errs() << "Error while parsing command arguments: " << e.what() << '\n';
+    llvm::errs() << "Error while parsing command arguments: " << e.what() << Eol;
     return 1;
   }
 
@@ -98,8 +104,13 @@ int main(int argc, const char *argv[])
   }
   catch(const std::exception& e)
   {
-    llvm::errs() << "Error while creating refactorings: " << e.what() << '\n';
+    llvm::errs() << "Error while creating refactorings: " << e.what() << Eol;
     return 1;
+  }
+
+  if (VerboseOption.getValue())
+  {
+    llvm::outs() << "used Clang resource path: " << clang.getResourceDir() << Eol;
   }
 
   int returncode = app.run();

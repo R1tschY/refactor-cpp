@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "utils/algorithm.h"
+#include "internals/clang.h"
 
 using namespace clang;
 using namespace clang::tooling;
@@ -22,25 +23,39 @@ using namespace llvm;
 
 namespace Refactor {
 
-static
-CommandLineArguments setPseudoBinPath(const CommandLineArguments& in)
+namespace {
+
+ArgumentsAdjuster getClangResourcePathAdjuster(const Clang& clang)
 {
-  CommandLineArguments result = in;
-  result[0] = (Twine(LLVM_BINDIR) + "/refactor-cpp").str();
-  return result;
+#if REFACTOR_LLVM_PREQE(3,8,0)
+  return [=](const CommandLineArguments& in, StringRef Filename)
+#else
+  return [=](const CommandLineArguments& in)
+#endif
+  {
+    CommandLineArguments result = in;
+
+    // allow user defined resource dir
+    for (StringRef arg : result)
+      if (arg.startswith("-resource-dir"))
+        return result;
+
+    result.push_back("-resource-dir=" + clang.getResourceDir());
+    return result;
+  };
 }
 
+} // namespace
+
 RefactoringTask::RefactoringTask(
+  Clang& clang,
   const clang::tooling::CompilationDatabase &compilations,
   llvm::ArrayRef<std::string> source_paths
 )
-: tool_(compilations, source_paths)
+: clang_(clang),
+  tool_(compilations, source_paths)
 {
-  tool_.appendArgumentsAdjuster(&setPseudoBinPath);
-}
-
-RefactoringTask::~RefactoringTask()
-{
+  tool_.appendArgumentsAdjuster(getClangResourcePathAdjuster(clang));
 }
 
 void RefactoringTask::addRefactoring(const Refactoring& task)

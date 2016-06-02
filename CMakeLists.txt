@@ -85,12 +85,12 @@ endif()
 
 # Boost
 set(Boost_USE_STATIC_LIBS OFF) 
-set(Boost_USE_MULTITHREADED ON) 
-find_package(Boost QUIET REQUIRED)
+set(Boost_USE_MULTITHREADED ON)
+find_package(Boost 1.60 QUIET REQUIRED)
 
 # Clang
 find_package(LLVM REQUIRED)
-find_package(Clang 
+find_package(Clang 3.6
   REQUIRED 
   COMPONENTS Frontend Serialization Driver Tooling ToolingCore Parse Sema 
              Analysis RewriteFrontend Rewrite Edit AST ASTMatchers Lex Basic
