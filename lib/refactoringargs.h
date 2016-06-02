@@ -39,22 +39,14 @@ public:
   typedef llvm::StringMap<std::string> OptionsContainer;
 
   RefactoringArgs() = default;
-
   RefactoringArgs(ArgsContainer&& args, OptionsContainer&& options)
   : args_(std::move(args)), options_(std::move(options))
   { }
 
   static RefactoringArgs fromString(llvm::StringRef args_str);
 
-  const ArgsContainer& getArgs() const
-  {
-    return args_;
-  }
-
-  const OptionsContainer& getOptions() const
-  {
-    return options_;
-  }
+  const ArgsContainer& getArgs() const { return args_; }
+  const OptionsContainer& getOptions() const { return options_; }
 
 private:
   ArgsContainer args_;

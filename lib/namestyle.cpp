@@ -203,7 +203,7 @@ static std::string toCamelCase(llvm::StringRef id)
 {
   std::string result = id.lower();
   if (result.size() > 0)
-    result[0] = std::toupper(result[0]);
+    result[0] = static_cast<char>(std::toupper(result[0]));
   return result;
 }
 

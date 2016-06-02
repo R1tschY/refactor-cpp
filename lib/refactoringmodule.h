@@ -55,7 +55,7 @@ public:
 
   /// \brief register a refactoring feature from a class
   template<typename T>
-  void registerRefactoring(llvm::StringRef name);
+  void registerRefactoring(llvm::StringRef module_name);
 
   /// \brief create a reafctoring from a \p name and \p args
   std::unique_ptr<Refactoring> create(
@@ -85,10 +85,10 @@ public:
 // implementation
 
 template<typename T>
-void RefactoringFactories::registerRefactoring(llvm::StringRef name)
+void RefactoringFactories::registerRefactoring(llvm::StringRef module_name)
 {
   registerRefactoring(
-    name,
+    module_name,
     [](llvm::StringRef name, const RefactoringArgs& args)
     {
       return std::make_unique<T>(name, args);

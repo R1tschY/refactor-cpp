@@ -41,5 +41,4 @@ build*
 
 # Eclipse
 .settings
-.cproject
-.project
+.*project
