@@ -22,7 +22,7 @@ std::vector<Replacement> getReplacements(
   for (auto& group : groups)
   {
     auto& replacements = group.getReplacements();
-    Support::appendByCopy(result, replacements);
+    Support::append(result, replacements);
   }
 
   return result;

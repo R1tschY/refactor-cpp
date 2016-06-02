@@ -26,7 +26,7 @@
 #include <algorithm>
 
 namespace Refactor {
-namespace Support {
+inline namespace Support {
 
 // meta programming support
 
@@ -89,15 +89,17 @@ void adjacentDifference(const In& lhs, Out& rhs, Func&& func)
 }
 
 /// \brief add copy of elements of \p rhs to \p lhs
+/// \details append all elements of rhs to lhs by copying
 template<typename ContainerLhs, typename ContainerRhs>
-void appendByCopy(ContainerLhs& lhs, const ContainerRhs& rhs)
+void append(ContainerLhs& lhs, const ContainerRhs& rhs)
 {
   lhs.insert(lhs.end(), rhs.begin(), rhs.end());
 }
 
 /// \brief add elements of \p rhs to \p lhs
+/// \details append all elements of rhs to lhs by moving and clear rhs
 template<typename ContainerLhs, typename ContainerRhs>
-void appendByMove(ContainerLhs& lhs, ContainerRhs& rhs)
+void merge(ContainerLhs& lhs, ContainerRhs& rhs)
 {
   reserve(lhs, lhs.size() + rhs.size());
   std::move(rhs.begin(), rhs.end(), std::back_inserter(lhs));
